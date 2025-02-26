@@ -10,34 +10,44 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-import os
+import os, io
 from pathlib import Path
 import firebase_admin
 import base64
 import json
 from firebase_admin import credentials, db
 from pcloud import PyCloud
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseDownload
+from google.oauth2 import service_account
 
-# Replace with your pCloud email and password
-email = 'suzanmarya@gmail.com'
-password = str(os.environ.get("PCLOUD_PASSWORD"))
+# Set up the Drive API
+SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
+SERVICE_ACCOUNT_FILE = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 
-pc = PyCloud(email, password)
+# Use your service account credentials to authorize the API
+credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+service = build('drive', 'v3', credentials=credentials)
 
-# Open the file on pCloud
-response = pc.file_open(path=os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"), flags=0x0040)  # 0x0040 is the flag for read access
-file_descriptor = response['fd']
+# File ID of your uploaded Firebase service account key on Google Drive
+FILE_ID = '1HEBZUo_AtuYA7IlIlY_WFXWCqM-vbMqB'
 
-# Get the file size
-size_response = pc.file_size(fd=file_descriptor)
-file_size = size_response['size']
+# Request the file from Google Drive
+request = service.files().get_media(fileId=FILE_ID)
+fh = io.FileIO('service_account_key.json', 'wb')
+downloader = MediaIoBaseDownload(fh, request)
 
-# Read the file content
-file_content_response = pc.file_read(fd=file_descriptor, count=file_size)
-file_content = file_content_response['data']
+done = False
+while done is False:
+    status, done = downloader.next_chunk()
 
-# Load the credentials from the file content
-cred_dict = json.loads(file_content)
+# Now 'service_account_key.json' is downloaded on the server
+# Load the credentials from the downloaded JSON file
+with open('service_account_key.json', 'r') as f:
+    cred_dict = json.load(f)
+
+import firebase_admin
+from firebase_admin import credentials
 
 # Initialize Firebase Admin SDK
 cred = credentials.Certificate(cred_dict)
