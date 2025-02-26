@@ -18,22 +18,22 @@ import json
 from firebase_admin import credentials, db
 
 
-# Load Firebase credentials from the file specified in the environment variable
-firebase_credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+# Load Firebase credentials from environment variable
+encoded_key = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 
-if not firebase_credentials_path:
+if not encoded_key:
     raise ValueError("Firebase credentials not found in environment variables.")
 
 try:
-    # Initialize Firebase with the credentials file
-    cred = credentials.Certificate(firebase_credentials_path)
-    
-    # Prevent re-initialization of Firebase app
-    if not firebase_admin._apps:
+    decoded_key = base64.b64decode(encoded_key).decode("utf-8")
+    cred_dict = json.loads(decoded_key)
+
+    if not firebase_admin._apps:  # Prevent re-initialization
+        cred = credentials.Certificate(cred_dict)
         firebase_admin.initialize_app(cred)
 
-except Exception as e:
-    raise ValueError(f"Error initializing Firebase: {e}")
+except (base64.binascii.Error, json.JSONDecodeError) as e:
+    raise ValueError(f"Invalid Firebase credentials: {e}")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
