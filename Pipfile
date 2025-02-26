@@ -15,6 +15,7 @@ channels-redis = "*"
 psycopg2-binary = "*"
 gunicorn = "*"
 whitenoise = "*"
+pcloud = "*"
 
 [dev-packages]
 

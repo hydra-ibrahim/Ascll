@@ -16,24 +16,34 @@ import firebase_admin
 import base64
 import json
 from firebase_admin import credentials, db
+from pcloud import PyCloud
 
+# Replace with your pCloud email and password
+email = 'suzanmarya@gmail.com'
+password = os.getenv("PCLOUD_PASSWORD")
 
-# Load Firebase credentials from the file specified in the environment variable
-firebase_credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+pc = PyCloud(email, password)
 
-if not firebase_credentials_path:
-    raise ValueError("Firebase credentials not found in environment variables.")
+# Open the file on pCloud
+response = pc.file_open(path=os.getenv("GOOGLE_APPLICATION_CREDENTIALS"), flags=0x0040)  # 0x0040 is the flag for read access
+file_descriptor = response['fd']
 
-try:
-    # Initialize Firebase with the credentials file
-    cred = credentials.Certificate(firebase_credentials_path)
-    
-    # Prevent re-initialization of Firebase app
-    if not firebase_admin._apps:
-        firebase_admin.initialize_app(cred)
+# Get the file size
+size_response = pc.file_size(fd=file_descriptor)
+file_size = size_response['size']
 
-except Exception as e:
-    raise ValueError(f"Error initializing Firebase: {e}")
+# Read the file content
+file_content_response = pc.file_read(fd=file_descriptor, count=file_size)
+file_content = file_content_response['data']
+
+# Load the credentials from the file content
+cred_dict = json.loads(file_content)
+
+# Initialize Firebase Admin SDK
+cred = credentials.Certificate(cred_dict)
+if not firebase_admin._apps:  # Prevent re-initialization
+    firebase_admin.initialize_app(cred)
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
