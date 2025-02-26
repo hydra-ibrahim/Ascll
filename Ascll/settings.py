@@ -10,17 +10,30 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 import firebase_admin
+import base64
+import json
 from firebase_admin import credentials, db
 
-FIREBASE_CREDENTIALS_PATH = "./ascll-987a9-firebase-adminsdk-fbsvc-ec45738a39.json"
 
-# Initialize Firebase
-cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
-firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://ascll-987a9.firebaseio.com/'  # Replace with your database URL
-})
+# Load Firebase credentials from environment variable
+encoded_key = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+
+if not encoded_key:
+    raise ValueError("Firebase credentials not found in environment variables.")
+
+try:
+    decoded_key = base64.b64decode(encoded_key).decode("utf-8")
+    cred_dict = json.loads(decoded_key)
+
+    if not firebase_admin._apps:  # Prevent re-initialization
+        cred = credentials.Certificate(cred_dict)
+        firebase_admin.initialize_app(cred)
+
+except (base64.binascii.Error, json.JSONDecodeError) as e:
+    raise ValueError(f"Invalid Firebase credentials: {e}")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
