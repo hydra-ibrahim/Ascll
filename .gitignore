@@ -1,0 +1,17 @@
+# Ignore Google Service Account Key
+ascll-987a9-firebase-adminsdk-fbsvc-d157ebc9f2.json
+encoded_firebase_key.txt
+
+# Ignore common Django and Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.log
+db.sqlite3
+.env
+
+# Ignore Virtual Environment
+venv/
+env/
