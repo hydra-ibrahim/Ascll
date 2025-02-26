@@ -20,12 +20,12 @@ from pcloud import PyCloud
 
 # Replace with your pCloud email and password
 email = 'suzanmarya@gmail.com'
-password = os.getenv("PCLOUD_PASSWORD")
+password = os.environ.getenv("PCLOUD_PASSWORD")
 
 pc = PyCloud(email, password)
 
 # Open the file on pCloud
-response = pc.file_open(path=os.getenv("GOOGLE_APPLICATION_CREDENTIALS"), flags=0x0040)  # 0x0040 is the flag for read access
+response = pc.file_open(path=os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"), flags=0x0040)  # 0x0040 is the flag for read access
 file_descriptor = response['fd']
 
 # Get the file size
