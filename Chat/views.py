@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import UserFCMToken, ChatMessage
 from .serializers import FCMTokenSerializer, ChatMessageSerializer
 from django.contrib.auth.models import User
-from firebase_chat import send_fcm_notification
+from .firebase_chat import send_fcm_notification
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
