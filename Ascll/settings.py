@@ -136,7 +136,7 @@ DATABASES = {
     'NAME': 'railway',
     'USER': 'postgres',
     'PASSWORD': 'EEDnqMRuxBjpwgssfjWENuJzZbnARmkU',
-    'HOST': '@metro.proxy.rlwy.net',
+    'HOST': 'metro.proxy.rlwy.net',
     'PORT': '23063',
 }
 }
