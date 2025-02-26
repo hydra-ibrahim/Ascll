@@ -20,7 +20,7 @@ from pcloud import PyCloud
 
 # Replace with your pCloud email and password
 email = 'suzanmarya@gmail.com'
-password = os.environ.get("PCLOUD_PASSWORD")
+password = str(os.environ.get("PCLOUD_PASSWORD"))
 
 pc = PyCloud(email, password)
 
