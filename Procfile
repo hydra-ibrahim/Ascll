@@ -1,1 +1,0 @@
-web: gunicorn Ascll.wsgi --log-file -
