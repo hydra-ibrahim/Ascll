@@ -10,48 +10,26 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-import os, io
+import os
 from pathlib import Path
 import firebase_admin
-import base64
 import json
-from firebase_admin import credentials, db
-from pcloud import PyCloud
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload
-from google.oauth2 import service_account
-
-# Set up the Drive API
-SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
-SERVICE_ACCOUNT_FILE = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-
-# Use your service account credentials to authorize the API
-credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-service = build('drive', 'v3', credentials=credentials)
-
-# File ID of your uploaded Firebase service account key on Google Drive
-FILE_ID = '1HEBZUo_AtuYA7IlIlY_WFXWCqM-vbMqB'
-
-# Request the file from Google Drive
-request = service.files().get_media(fileId=FILE_ID)
-fh = io.FileIO('service_account_key.json', 'wb')
-downloader = MediaIoBaseDownload(fh, request)
-
-done = False
-while done is False:
-    status, done = downloader.next_chunk()
-
-# Now 'service_account_key.json' is downloaded on the server
-# Load the credentials from the downloaded JSON file
-with open('service_account_key.json', 'r') as f:
-    cred_dict = json.load(f)
-
-import firebase_admin
 from firebase_admin import credentials
 
-# Initialize Firebase Admin SDK
-cred = credentials.Certificate(cred_dict)
-if not firebase_admin._apps:  # Prevent re-initialization
+GOOGLE_CREDENTIALS_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+
+if GOOGLE_CREDENTIALS_PATH and os.path.exists(GOOGLE_CREDENTIALS_PATH):
+    with open(GOOGLE_CREDENTIALS_PATH, "r") as file:
+        GOOGLE_CREDENTIALS = json.load(file)
+else:
+    GOOGLE_CREDENTIALS = None  # Handle missing credentials gracefully
+
+# Example: Configuring Firebase or Google services
+if GOOGLE_CREDENTIALS:
+    import firebase_admin
+    from firebase_admin import credentials
+
+    cred = credentials.Certificate(GOOGLE_CREDENTIALS)
     firebase_admin.initialize_app(cred)
 
 
